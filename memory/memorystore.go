@@ -90,3 +90,16 @@ func (s *MemoryTokenStore) CheckToken(strToken string) (tauth.Token, error) {
 	}
 	return t, nil
 }
+
+func (s *MemoryTokenStore) RefreshToken(strToken string) error {
+	t, ok := s.tokens[strToken]
+	if !ok {
+		return errors.New("Failed to authenticate")
+	}
+	t.ExpireAt = time.Now().Add(time.Minute * 30)
+	return nil
+}
+
+func (s *MemoryTokenStore) RemoveToken(strToken string) {
+	delete(s.tokens, strToken)
+}
