@@ -6,11 +6,11 @@ import (
 	"errors"
 	"github.com/freehaha/token-auth"
 	"time"
+	"github.com/golang/glog"
 )
 
 type MemoryTokenStore struct {
 	tokens   map[string]*MemoryToken
-	idTokens map[string]*MemoryToken
 	salt     string
 }
 
@@ -60,12 +60,10 @@ func (s *MemoryTokenStore) NewToken(id interface{}) *MemoryToken {
 		Token:    strToken,
 		Id:       strId,
 	}
-	oldT, ok := s.idTokens[strId]
-	if ok {
-		delete(s.tokens, oldT.Token)
-	}
+
+	delete(s.tokens, strToken)
+
 	s.tokens[strToken] = t
-	s.idTokens[strId] = t
 	return t
 }
 
@@ -74,7 +72,6 @@ func New(salt string) *MemoryTokenStore {
 	return &MemoryTokenStore{
 		salt:     salt,
 		tokens:   make(map[string]*MemoryToken),
-		idTokens: make(map[string]*MemoryToken),
 	}
 
 }
@@ -101,5 +98,6 @@ func (s *MemoryTokenStore) RefreshToken(strToken string) error {
 }
 
 func (s *MemoryTokenStore) RemoveToken(strToken string) {
+	glog.Infof("Remove token: %v", strToken)
 	delete(s.tokens, strToken)
 }
