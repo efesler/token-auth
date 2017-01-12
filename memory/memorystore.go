@@ -7,6 +7,7 @@ import (
 	"github.com/freehaha/token-auth"
 	"time"
 	"github.com/golang/glog"
+	"fmt"
 )
 
 type MemoryTokenStore struct {
@@ -87,7 +88,7 @@ func (s *MemoryTokenStore) CheckToken(strToken string) (tauth.Token, error) {
 	}
 	if t.ExpireAt.Before(time.Now()) {
 		delete(s.tokens, strToken)
-		return nil, errors.New("Token expired")
+		return nil, errors.New(fmt.Sprintf("Token expired at %v", t.ExpireAt))
 	}
 	return t, nil
 }
@@ -101,7 +102,8 @@ func (s *MemoryTokenStore) RefreshTokenForDuration(strToken string, duration tim
 	if !ok {
 		return errors.New("Failed to authenticate")
 	}
-	t.ExpireAt = time.Now().Add(time.Second * duration)
+	t.ExpireAt = time.Now().Add(duration)
+	glog.Infof("token will now expire at %v", t.ExpireAt)
 	return nil
 }
 
